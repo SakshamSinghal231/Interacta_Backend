@@ -72,31 +72,36 @@ export const likePost = async (req, res) => {
     res.status(404).json({ message: err.message });
   }
 };
-
-
 export const commentPost = async (req, res) => {
     try {
         const { id } = req.params;
-        const { value } = req.body;
+        const { comment } = req.body;
+
+        // Find the post by ID
         const post = await Post.findById(id);
-        const updatedPost = await Post.findByIdAndUpdate(
-            id,
-            { comments: post.comments },
-            { new: true }
-        );
-        post.comments.push(value);
+
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Update the post's comments array with the new comment
+        post.comments.push(comment);
+
+        // Save the updated post with the new comment
+        const updatedPost = await post.save();
+
         res.status(200).json(updatedPost);
     } catch (err) {
-        res.status(404).json({ message: err.message });
+        console.log("Error:", err); // Debug log
+        res.status(500).json({ message: err.message });
     }
 };
 
-
 export const getUser = async (req, res) => {
     try {
-        const { firstName } = req.params;
-        const post = await User.find({ firstName });
-        res.status(200).json(post);
+        const { userId } = req.params; // Assuming userId is passed as a parameter
+        const user = await User.findOne({ userId }); // Find user by userId
+        res.status(200).json(user);
     } catch (err) {
         res.status(404).json({ message: err.message });
     }
